@@ -1,0 +1,3758 @@
+<?xml version="1.0"?>
+
+<Devices>
+	<Device type="custom" id="epslcdwe">
+		<Name>Weather Plugin LCD</Name>
+		<ConfigUI>
+			<!-- Hidden checkbox indicates if found EPS - Device Extensions weather device in Indigo -->
+			<Field type="checkbox" id="foundExtended" defaultValue="false" hidden="true">
+				<Label> </Label>
+				<Description>Device Extensions found</Description>
+			</Field>
+			
+			<Field type="menu" id="device" defaultValue="default">
+				<Label>Weather Device:</Label>
+				<List class="self" filter="com.perceptiveautomation.indigoplugin.weathersnoop,com.fogbert.indigoplugin.wunderground,com.perceptiveautomation.indigoplugin.NOAAWeather" method="getPluginDevices" dynamicReload="true"/>
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<!-- Extra space label so if extensions get detected they dont have to scroll down -->
+			<Field id="lbl_foundExtended" type="label" visibleBindingId="foundExtended" visibleBindingValue="false">
+				<Label>
+				
+				
+				</Label>
+			</Field>
+			
+			<Field type="menu" id="device2" defaultValue="default" visibleBindingId="foundExtended" visibleBindingValue="true">
+				<Label>Extended Weather Device (Optional):</Label>
+				<List class="indigo.devices" filter="com.eps.indigoplugin.device-extensions.epsdews"/>
+			</Field>
+			
+			<Field type="menu" id="digits" defaultValue="4" >
+				<Label>Weather values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="conditions" defaultValue="4" >
+				<Label>Weather conditions LCD digits:</Label>
+				<List>
+					<Option value="4">4</Option>
+					<Option value="20">20</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="decimals" defaultValue="actual" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+			
+			<Field type="menu" id="temps" defaultValue="F" >
+				<Label>Temperature value:</Label>
+				<List>
+					<Option value="F">Fahrenheit</Option>
+					<Option value="C">Celsius</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="measures" defaultValue="in" >
+				<Label>Measurement value:</Label>
+				<List>
+					<Option value="mm">Millimeters</Option>
+					<Option value="in">Inches</Option>
+					<Option value="cm">Centimeters</Option>
+					<Option value="km">Kilometers</Option>
+					<Option value="mi">Miles</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="speed" defaultValue="mph" >
+				<Label>Speed value:</Label>
+				<List>
+					<Option value="kn">Knots</Option>
+					<Option value="kph">Kilometers per hour</Option>
+					<Option value="mph">Miles per hour</Option>
+					<Option value="mps">Meters per second</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="pressure" defaultValue="inHg" >
+				<Label>Pressure value:</Label>
+				<List>
+					<Option value="cb">Cumulonimbus</Option>
+					<Option value="inHg">Inches of mercury</Option>
+					<Option value="mb">Millibar</Option>
+				</List>
+			</Field>
+					
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="sep1">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="temperature1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 1</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 1</ControlPageLabel>
+			</State>
+			<State id="temperature2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 2</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 2</ControlPageLabel>
+			</State>
+			<State id="temperature3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 3</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 3</ControlPageLabel>
+			</State>
+			<State id="temperature4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 4</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_Temp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="humidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 1</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 1</ControlPageLabel>
+			</State>
+			<State id="humidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 2</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 2</ControlPageLabel>
+			</State>
+			<State id="humidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 3</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 3</ControlPageLabel>
+			</State>
+			<State id="humidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 4</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_Humidity">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="dayrain1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily Rain - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily Rain - LCD 1</ControlPageLabel>
+			</State>
+			<State id="dayrain2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily Rain - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily Rain - LCD 2</ControlPageLabel>
+			</State>
+			<State id="dayrain3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily Rain - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily Rain - LCD 3</ControlPageLabel>
+			</State>
+			<State id="dayrain4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily Rain - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily Rain - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_DayRain">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="hourrain1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Hourly Rain - LCD 1</TriggerLabel>
+				<ControlPageLabel>Hourly Rain - LCD 1</ControlPageLabel>
+			</State>
+			<State id="hourrain2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Hourly Rain - LCD 2</TriggerLabel>
+				<ControlPageLabel>Hourly Rain - LCD 2</ControlPageLabel>
+			</State>
+			<State id="hourrain3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Hourly Rain - LCD 3</TriggerLabel>
+				<ControlPageLabel>Hourly Rain - LCD 3</ControlPageLabel>
+			</State>
+			<State id="hourrain4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Hourly Rain - LCD 4</TriggerLabel>
+				<ControlPageLabel>Hourly Rain - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_HourRain">
+				<ValueType>Separator</ValueType>
+			</State>				
+			
+			<State id="conditions1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 1</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 1</ControlPageLabel>
+			</State>
+			<State id="conditions2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 2</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 2</ControlPageLabel>
+			</State>
+			<State id="conditions3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 3</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 3</ControlPageLabel>
+			</State>
+			<State id="conditions4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 4</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 4</ControlPageLabel>
+			</State>
+			<State id="conditions5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 5</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 5</ControlPageLabel>
+			</State>
+			<State id="conditions6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 6</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 6</ControlPageLabel>
+			</State>
+			<State id="conditions7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 7</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 7</ControlPageLabel>
+			</State>
+			<State id="conditions8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 8</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 8</ControlPageLabel>
+			</State>
+			<State id="conditions9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 9</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 9</ControlPageLabel>
+			</State>
+			<State id="conditions10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 10</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 10</ControlPageLabel>
+			</State>
+			<State id="conditions11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 11</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 11</ControlPageLabel>
+			</State>
+			<State id="conditions12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 12</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 12</ControlPageLabel>
+			</State>
+			<State id="conditions13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 13</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 13</ControlPageLabel>
+			</State>
+			<State id="conditions14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 14</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 14</ControlPageLabel>
+			</State>
+			<State id="conditions15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 15</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 15</ControlPageLabel>
+			</State>
+			<State id="conditions16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 16</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 16</ControlPageLabel>
+			</State>
+			<State id="conditions17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 17</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 17</ControlPageLabel>
+			</State>
+			<State id="conditions18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 18</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 18</ControlPageLabel>
+			</State>
+			<State id="conditions19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 19</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 19</ControlPageLabel>
+			</State>
+			<State id="conditions20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Skies - LCD 20</TriggerLabel>
+				<ControlPageLabel>Skies - LCD 20</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_conditions">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<!-- BEGIN STATES ADDED IN 1.1.0 -->
+			
+			<State id="dewpoint1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Dew point - LCD 1</TriggerLabel>
+				<ControlPageLabel>Dew point - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="dewpoint2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Dew point - LCD 2</TriggerLabel>
+				<ControlPageLabel>Dew point - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="dewpoint3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Dew point - LCD 3</TriggerLabel>
+				<ControlPageLabel>Dew point - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="dewpoint4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Dew point - LCD 4</TriggerLabel>
+				<ControlPageLabel>Dew point - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_dewpoint">
+				<ValueType>Separator</ValueType>
+			</State>
+
+			<State id="feelslike1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Feels like - LCD 1</TriggerLabel>
+				<ControlPageLabel>Feels like - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="feelslike2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Feels like - LCD 2</TriggerLabel>
+				<ControlPageLabel>Feels like - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="feelslike3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Feels like - LCD 3</TriggerLabel>
+				<ControlPageLabel>Feels like - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="feelslike4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Feels like - LCD 4</TriggerLabel>
+				<ControlPageLabel>Feels like - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_feelslike">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="windchill1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind chill - LCD 1 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind chill - LCD 1 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windchill2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind chill - LCD 2 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind chill - LCD 2 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windchill3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind chill - LCD 3 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind chill - LCD 3 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windchill4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind chill - LCD 4 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind chill - LCD 4 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="sep_windchill">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="windDegrees1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind degrees - LCD 1</TriggerLabel>
+				<ControlPageLabel>Wind degrees - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="windDegrees2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind degrees - LCD 2</TriggerLabel>
+				<ControlPageLabel>Wind degrees - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="windDegrees3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind degrees - LCD 3</TriggerLabel>
+				<ControlPageLabel>Wind degrees - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="windDegrees4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind degrees - LCD 4</TriggerLabel>
+				<ControlPageLabel>Wind degrees - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_windDegrees">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="windDirection1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind direction - LCD 1</TriggerLabel>
+				<ControlPageLabel>Wind direction - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="windDirection2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind direction - LCD 2</TriggerLabel>
+				<ControlPageLabel>Wind direction - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="windDirection3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind direction - LCD 3</TriggerLabel>
+				<ControlPageLabel>Wind direction - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="windDirection4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind direction - LCD 4</TriggerLabel>
+				<ControlPageLabel>Wind direction - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_windDirection">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="windSpeed1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind speed - LCD 1</TriggerLabel>
+				<ControlPageLabel>Wind speed - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="windSpeed2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind speed - LCD 2</TriggerLabel>
+				<ControlPageLabel>Wind speed - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="windSpeed3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind speed - LCD 3</TriggerLabel>
+				<ControlPageLabel>Wind speed - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="windSpeed4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind speed - LCD 4</TriggerLabel>
+				<ControlPageLabel>Wind speed - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_windSpeed">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="windGust1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind gust - LCD 1 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind gust - LCD 1 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windGust2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind gust - LCD 2 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind gust - LCD 2 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windGust3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind gust - LCD 3 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind gust - LCD 3 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="windGust4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Wind gust - LCD 4 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Wind gust - LCD 4 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="sep_windGust">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="pressure1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Barometric pressure - LCD 1</TriggerLabel>
+				<ControlPageLabel>Barometric pressure - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="pressure2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Barometric pressure - LCD 2</TriggerLabel>
+				<ControlPageLabel>Barometric pressure - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="pressure3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Barometric pressure - LCD 3</TriggerLabel>
+				<ControlPageLabel>Barometric pressure - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="pressure4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Barometric pressure - LCD 4</TriggerLabel>
+				<ControlPageLabel>Barometric pressure - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_pressure">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="solarRadiation1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Solar radiation / UV - LCD 1 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Solar radiation / UV - LCD 1 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="solarRadiation2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Solar radiation / UV - LCD 2 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Solar radiation / UV - LCD 2 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="solarRadiation3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Solar radiation / UV - LCD 3 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Solar radiation / UV - LCD 3 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="solarRadiation4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Solar radiation / UV - LCD 4 (except NOAA)</TriggerLabel>
+				<ControlPageLabel>Solar radiation / UV - LCD 4 (except NOAA)</ControlPageLabel>
+			</State>
+			
+			<State id="sep_solarRadiation">
+				<ValueType>Separator</ValueType>
+			</State>															
+
+
+			<!-- END STATES ADDED IN 1.1.0 -->
+			
+			
+			<State id="hightemp1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_hightemp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="lowtemp1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_lowtemp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="highhumidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_highhumidity">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="lowhumidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_lowhumidity">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreDay11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast today (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast today (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast today (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast today (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreDay1">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreDay21">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay22">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay23">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay24">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreDay2">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreDay31">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay32">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay33">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay34">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreDay3">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreDay41">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay42">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay43">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreDay44">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreDay4">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="foreLow11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today low (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast today low (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today low (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast today low (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today low (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast today low (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today low (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast today low (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreLow1">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreLow21">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 low (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 low (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow22">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 low (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 low (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow23">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 low (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 low (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow24">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 low (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 low (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreLow2">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreLow31">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 low (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 low (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow32">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 low (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 low (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow33">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 low (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 low (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow34">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 low (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 low (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreLow3">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreLow41">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 low (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 low (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow42">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 low (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 low (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow43">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 low (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 low (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreLow44">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 low (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 low (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreLow4">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="foreHigh11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today high (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast today high (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today high (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast today high (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today high (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast today high (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today high (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast today high (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreHigh1">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreHigh21">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 high (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 high (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh22">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 high (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 high (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh23">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 high (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 high (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh24">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 high (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 high (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreHigh2">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreHigh31">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 high (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 high (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh32">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 high (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 high (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh33">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 high (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 high (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh34">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 high (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 high (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreHigh3">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="foreHigh41">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 high (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 high (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh42">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 high (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 high (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh43">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 high (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 high (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="foreHigh44">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 high (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 high (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_foreHigh4">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="forePop11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today precipitation (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast today precipitation (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="forePop12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today precipitation (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast today precipitation (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="forePop13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today precipitation (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast today precipitation (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="forePop14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast today precipitation (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast today precipitation (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_forePop1">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="forePop21">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 precipitation (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 precipitation (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="forePop22">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 precipitation (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 precipitation (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="forePop23">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 precipitation (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 precipitation (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="forePop24">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 2 precipitation (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 2 precipitation (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_forePop2">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="forePop31">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 precipitation (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 precipitation (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="forePop32">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 precipitation (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 precipitation (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="forePop33">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 precipitation (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 precipitation (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="forePop34">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 3 precipitation (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 3 precipitation (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_forePop3">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="forePop41">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 precipitation (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 precipitation (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="forePop42">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 precipitation (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 precipitation (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="forePop43">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 precipitation (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 precipitation (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="forePop44">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Forecast day 4 precipitation (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Forecast day 4 precipitation (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_forePop4">
+				<ValueType>Separator</ValueType>
+			</State>			
+			
+			<State id="historyHigh1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic high temperature (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Historic high temperature (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="historyHigh2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic high temperature (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Historic high temperature (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="historyHigh3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic high temperature (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Historic high temperature (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="historyHigh4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic high temperature (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Historic high temperature (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_historyHigh">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="historyLow1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic low temperature (WUnderground) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Historic low temperature (WUnderground) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="historyLow2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic low temperature (WUnderground) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Historic low temperature (WUnderground) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="historyLow3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic low temperature (WUnderground) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Historic low temperature (WUnderground) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="historyLow4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Historic low temperature (WUnderground) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Historic low temperature (WUnderground) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_historyLow">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>
+	
+	<Device type="custom" id="epslcdth">
+		<Name>Thermostat LCD</Name>
+		<ConfigUI>
+			<!-- Hidden checkbox indicates if found EPS - Device Extensions weather device in Indigo -->
+			<Field type="checkbox" id="foundExtended" defaultValue="false" hidden="true">
+				<Label> </Label>
+				<Description>Device Extensions found</Description>
+			</Field>
+			
+			<Field id="device" type="menu" >
+				<Label>Thermostat Device:</Label>
+				<List class="indigo.devices" filter="indigo.thermostat" />
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<!-- Extra space label so if extensions get detected they dont have to scroll down -->
+			<Field id="lbl_foundExtended" type="label" visibleBindingId="foundExtended" visibleBindingValue="false">
+				<Label>
+				
+				
+				</Label>
+			</Field>
+			
+			<Field type="menu" id="device2" defaultValue="default" visibleBindingId="foundExtended" visibleBindingValue="true">
+				<Label>Extended Thermostat Device (Optional):</Label>
+				<List class="indigo.devices" filter="com.eps.indigoplugin.device-extensions.epsdeth"/>
+			</Field>
+			
+			<Field type="menu" id="temps" defaultValue="F" >
+				<Label>Show temps in:</Label>
+				<List>
+					<Option value="F">Fahrenheit</Option>
+					<Option value="C">Celsius</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="digits" defaultValue="4" >
+				<Label>Temperature values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="decimals" defaultValue="actual" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="temperatureInput11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 1</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 1</ControlPageLabel>
+			</State>
+			<State id="temperatureInput12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 2</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 2</ControlPageLabel>
+			</State>
+			<State id="temperatureInput13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 3</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 3</ControlPageLabel>
+			</State>
+			<State id="temperatureInput14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Temperature - LCD 4</TriggerLabel>
+				<ControlPageLabel>Temperature - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_Temp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="setpointHeat1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Heat Setpoint - LCD 1</TriggerLabel>
+				<ControlPageLabel>Heat Setpoint - LCD 1</ControlPageLabel>
+			</State>
+			<State id="setpointHeat2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Heat Setpoint - LCD 2</TriggerLabel>
+				<ControlPageLabel>Heat Setpoint - LCD 2</ControlPageLabel>
+			</State>
+			<State id="setpointHeat3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Heat Setpoint - LCD 3</TriggerLabel>
+				<ControlPageLabel>Heat Setpoint - LCD 3</ControlPageLabel>
+			</State>
+			<State id="setpointHeat4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Heat Setpoint - LCD 4</TriggerLabel>
+				<ControlPageLabel>Heat Setpoint - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_HeatSetpoint">
+				<ValueType>Separator</ValueType>
+			</State>		
+			
+			<State id="setpointCool1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Cool Setpoint - LCD 1</TriggerLabel>
+				<ControlPageLabel>Cool Setpoint - LCD 1</ControlPageLabel>
+			</State>
+			<State id="setpointCool2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Cool Setpoint - LCD 2</TriggerLabel>
+				<ControlPageLabel>Cool Setpoint - LCD 2</ControlPageLabel>
+			</State>
+			<State id="setpointCool3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Cool Setpoint - LCD 3</TriggerLabel>
+				<ControlPageLabel>Cool Setpoint - LCD 3</ControlPageLabel>
+			</State>
+			<State id="setpointCool4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Cool Setpoint - LCD 4</TriggerLabel>
+				<ControlPageLabel>Cool Setpoint - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_CoolSetPoint">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="humidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 1</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 1</ControlPageLabel>
+			</State>
+			<State id="humidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 2</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 2</ControlPageLabel>
+			</State>
+			<State id="humidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 3</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 3</ControlPageLabel>
+			</State>
+			<State id="humidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Humidity - LCD 4</TriggerLabel>
+				<ControlPageLabel>Humidity - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_Humidity">
+				<ValueType>Separator</ValueType>
+			</State>	
+						
+			<State id="hightemp1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="hightemp4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high temperature (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily high temperature (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_hightemp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="lowtemp1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="lowtemp4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low temperature (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily low temperature (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_lowtemp">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="highhumidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="highhumidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily high humidity (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily high humidity (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_highhumidity">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="lowhumidity1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="lowhumidity4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Daily low humidity (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Daily low humidity (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_lowhumidity">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="setModeSetPoint1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current set mode's setpoint (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Current set mode's setpoint (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			
+			<State id="setModeSetPoint2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current set mode's setpoint (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Current set mode's setpoint (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			
+			<State id="setModeSetPoint3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current set mode's setpoint (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Current set mode's setpoint (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			
+			<State id="setModeSetPoint4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current set mode's setpoint (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Current set mode's setpoint (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>						
+								
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>
+	
+	<Device type="custom" id="epslcdir">
+		<Name>Irrigation LCD</Name>
+		<ConfigUI>
+			<!-- Hidden checkbox indicates if found EPS - Device Extensions weather device in Indigo -->
+			<Field type="checkbox" id="foundExtended" defaultValue="false" hidden="true">
+				<Label> </Label>
+				<Description>Device Extensions found</Description>
+			</Field>
+			
+			<Field id="device" type="menu" >
+				<Label>Irrigation Device:</Label>
+				<List class="indigo.devices" filter="indigo.sprinkler" />
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<!-- Extra space label so if extensions get detected they dont have to scroll down -->
+			<Field id="lbl_foundExtended" type="label" visibleBindingId="foundExtended" visibleBindingValue="false">
+				<Label>
+				
+				
+				</Label>
+			</Field>
+			
+			<Field type="menu" id="device2" defaultValue="default" visibleBindingId="foundExtended" visibleBindingValue="true">
+				<Label>Extended Irrigation Device (Optional):</Label>
+				<List class="indigo.devices" filter="com.eps.indigoplugin.device-extensions.epsdeirr"/>
+			</Field>
+			
+			
+			
+			<Field type="menu" id="digits" defaultValue="4" >
+				<Label>Active zone values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="decimals" defaultValue="actual" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="activezone1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone - LCD 1</TriggerLabel>
+				<ControlPageLabel>Active Zone - LCD 1</ControlPageLabel>
+			</State>
+			<State id="activezone2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone - LCD 2</TriggerLabel>
+				<ControlPageLabel>Active Zone - LCD 2</ControlPageLabel>
+			</State>
+			<State id="activezone3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone - LCD 3</TriggerLabel>
+				<ControlPageLabel>Active Zone - LCD 3</ControlPageLabel>
+			</State>
+			<State id="activezone4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone - LCD 4</TriggerLabel>
+				<ControlPageLabel>Active Zone - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_ActiveZone">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+						<State id="activezonename1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="activezonename2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="activezonename3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="activezonename4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="activezonename5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="activezonename6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="activezonename7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="activezonename8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="activezonename9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="activezonename10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="activezonename11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="activezonename12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="activezonename13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="activezonename14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="activezonename15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="activezonename16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="activezonename17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="activezonename18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="activezonename19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="activezonename20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active Zone Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Active Zone Name - LCD 20</ControlPageLabel>
+			</State>				
+			
+			<State id="sep_activezonename">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="zonename1_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename1_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename1_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename1_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename1_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename1_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename1_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename1_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename1_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename1_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename1_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename1_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename1_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename1_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename1_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename1_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename1_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename1_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename1_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename1_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 1 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 1 Name - LCD 20</ControlPageLabel>
+			</State>				
+			
+			<State id="sep_ZoneName1">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+						<State id="zonename2_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename2_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename2_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename2_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename2_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename2_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename2_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename2_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename2_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename2_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename2_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename2_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename2_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename2_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename2_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename2_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename2_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename2_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename2_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename2_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 2 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 2 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_ZoneName2">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename3_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename3_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename3_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename3_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename3_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename3_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename3_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename3_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename3_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename3_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename3_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename3_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename3_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename3_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename3_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename3_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename3_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename3_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename3_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename3_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 3 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 3 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename3">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename4_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename4_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename4_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename4_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename4_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename4_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename4_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename4_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename4_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename4_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename4_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename4_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename4_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename4_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename4_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename4_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename4_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename4_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename4_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename4_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 4 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 4 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename4">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename5_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename5_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename5_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename5_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename5_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename5_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename5_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename5_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename5_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename5_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename5_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename5_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename5_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename5_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename5_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename5_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename5_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename5_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename5_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename5_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 5 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 5 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename5">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename6_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename6_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename6_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename6_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename6_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename6_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename6_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename6_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename6_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename6_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename6_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename6_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename6_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename6_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename6_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename6_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename6_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename6_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename6_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename6_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 6 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 6 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename6">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename7_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename7_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename7_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename7_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename7_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename7_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename7_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename7_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename7_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename7_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename7_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename7_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename7_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename7_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename7_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename7_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename7_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename7_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename7_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename7_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 7 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 7 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename7">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+						<State id="zonename8_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 1</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zonename8_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 2</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zonename8_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 3</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zonename8_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 4</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 4</ControlPageLabel>
+			</State>
+			<State id="zonename8_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 5</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 5</ControlPageLabel>
+			</State>
+			<State id="zonename8_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 6</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 6</ControlPageLabel>
+			</State>
+			<State id="zonename8_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 7</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 7</ControlPageLabel>
+			</State>
+			<State id="zonename8_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 8</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 8</ControlPageLabel>
+			</State>
+			<State id="zonename8_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 9</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 9</ControlPageLabel>
+			</State>
+			<State id="zonename8_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 10</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 10</ControlPageLabel>
+			</State>
+			<State id="zonename8_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 11</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 11</ControlPageLabel>
+			</State>
+			<State id="zonename8_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 12</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 12</ControlPageLabel>
+			</State>
+			<State id="zonename8_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 13</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 13</ControlPageLabel>
+			</State>
+			<State id="zonename8_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 14</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 14</ControlPageLabel>
+			</State>
+			<State id="zonename8_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 15</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 15</ControlPageLabel>
+			</State>
+			<State id="zonename8_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 16</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 16</ControlPageLabel>
+			</State>
+			<State id="zonename8_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 17</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 17</ControlPageLabel>
+			</State>
+			<State id="zonename8_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 18</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 18</ControlPageLabel>
+			</State>
+			<State id="zonename8_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 19</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 19</ControlPageLabel>
+			</State>
+			<State id="zonename8_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Zone 8 Name - LCD 20</TriggerLabel>
+				<ControlPageLabel>Zone 8 Name - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_zonename8">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="zoneRunTimeRemaining1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active zone run time remaining (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Active zone run time remaining (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			<State id="zoneRunTimeRemaining2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active zone run time remaining (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Active zone run time remaining (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			<State id="zoneRunTimeRemaining3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active zone run time remaining (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Active zone run time remaining (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			<State id="zoneRunTimeRemaining4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active zone run time remaining (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Active zone run time remaining (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_zoneRunTimeRemaining">
+				<ValueType>Separator</ValueType>
+			</State>	
+			
+			<State id="scheduleRunTimeRemaining1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active schedule run time remaining (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Active schedule run time remaining (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			<State id="scheduleRunTimeRemaining2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active schedule run time remaining (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Active schedule run time remaining (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			<State id="scheduleRunTimeRemaining3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active schedule run time remaining (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Active schedule run time remaining (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			<State id="scheduleRunTimeRemaining4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Active schedule run time remaining (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Active schedule run time remaining (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_scheduleRunTimeRemaining">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="pauseTimeRemaining1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 1</TriggerLabel>
+				<ControlPageLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 1</ControlPageLabel>
+			</State>
+			<State id="pauseTimeRemaining2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 2</TriggerLabel>
+				<ControlPageLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 2</ControlPageLabel>
+			</State>
+			<State id="pauseTimeRemaining3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 3</TriggerLabel>
+				<ControlPageLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 3</ControlPageLabel>
+			</State>
+			<State id="pauseTimeRemaining4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 4</TriggerLabel>
+				<ControlPageLabel>Is raining hard stop timer remaining (Device Extensions) - LCD 4</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_pauseRunTimeRemaining">
+				<ValueType>Separator</ValueType>
+			</State>				
+			
+			<State id="sep_zonename8">
+				<ValueType>Separator</ValueType>
+			</State>						
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>	
+	
+	<Device type="custom" id="epslcdsb">
+		<Name>State Based LCD</Name>
+		<ConfigUI>
+			<Field id="device" type="menu" >
+				<Label>Device:</Label>
+				<List class="indigo.devices" />
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_state1" type="separator" />
+			
+			<Field type="menu" id="state1" defaultValue="4" >
+				<Label>State 1 to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDevice" dynamicReload="true"/>
+			</Field>
+			
+			<Field type="menu" id="type1" defaultValue="auto" >
+				<Label>Values type:</Label>
+				<List>
+					<Option value="auto">Automatically determine</Option>
+					<Option value="stringfloat">Float as string</Option>
+					<Option value="sectommss">Convert total seconds to MM:SS</Option>
+					<Option value="sectohhmmss">Convert total seconds to HH:MM:SS</Option>
+				</List>
+			</Field>
+			
+			<Field id="clear1" type="button" >
+				<Label> </Label>
+				<Title>Clear </Title>
+				<CallbackMethod>uiButtonClicked_State1</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_state2" type="separator" />
+			
+			<Field type="menu" id="state2" defaultValue="4" >
+				<Label>State 2 to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDevice" dynamicReload="true"/>
+			</Field>
+			
+			<Field type="menu" id="type2" defaultValue="auto" >
+				<Label>Values type:</Label>
+				<List>
+					<Option value="auto">Automatically determine</Option>
+					<Option value="stringfloat">Float as string</Option>
+					<Option value="sectommss">Convert total seconds to MM:SS</Option>
+					<Option value="sectohhmmss">Convert total seconds to HH:MM:SS</Option>
+				</List>
+			</Field>
+			
+			<Field id="clear2" type="button" >
+				<Label> </Label>
+				<Title>Clear </Title>
+				<CallbackMethod>uiButtonClicked_State2</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_state3" type="separator" />
+			
+			<Field type="menu" id="state3" defaultValue="4" >
+				<Label>State 3 to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDevice" dynamicReload="true"/>
+			</Field>
+			
+			<Field type="menu" id="type3" defaultValue="auto" >
+				<Label>Values type:</Label>
+				<List>
+					<Option value="auto">Automatically determine</Option>
+					<Option value="stringfloat">Float as string</Option>
+					<Option value="sectommss">Convert total seconds to MM:SS</Option>
+					<Option value="sectohhmmss">Convert total seconds to HH:MM:SS</Option>
+				</List>
+			</Field>
+			
+			<Field id="clear3" type="button" >
+				<Label> </Label>
+				<Title>Clear </Title>
+				<CallbackMethod>uiButtonClicked_State3</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_state4" type="separator" />
+			
+			<Field type="menu" id="state4" defaultValue="4" >
+				<Label>State 4 to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDevice" dynamicReload="true"/>
+			</Field>
+			
+			<Field type="menu" id="type4" defaultValue="auto" >
+				<Label>Values type:</Label>
+				<List>
+					<Option value="auto">Automatically determine</Option>
+					<Option value="stringfloat">Float as string</Option>
+					<Option value="sectommss">Convert total seconds to MM:SS</Option>
+					<Option value="sectohhmmss">Convert total seconds to HH:MM:SS</Option>
+				</List>
+			</Field>
+			
+			<Field id="clear4" type="button" >
+				<Label> </Label>
+				<Title>Clear </Title>
+				<CallbackMethod>uiButtonClicked_State4</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_state5" type="separator" />
+			
+			<Field type="menu" id="state5" defaultValue="4" >
+				<Label>State 5 to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDevice" dynamicReload="true"/>
+			</Field>
+			
+			<Field type="menu" id="type5" defaultValue="auto" >
+				<Label>Values type:</Label>
+				<List>
+					<Option value="auto">Automatically determine</Option>
+					<Option value="stringfloat">Float as string</Option>
+					<Option value="sectommss">Convert total seconds to MM:SS</Option>
+					<Option value="sectohhmmss">Convert total seconds to HH:MM:SS</Option>
+				</List>
+			</Field>
+			
+			<Field id="clear5" type="button" >
+				<Label> </Label>
+				<Title>Clear </Title>
+				<CallbackMethod>uiButtonClicked_State5</CallbackMethod>
+			</Field>
+			
+			<Field id="sep_stateend" type="separator" />
+			
+			<Field type="menu" id="digits" defaultValue="4" >
+				<Label>State values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+				</List>
+			</Field>
+			
+			<Field type="menu" id="decimals" defaultValue="actual" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+			
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="state1_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 1</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 1</ControlPageLabel>
+			</State>
+			<State id="state1_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 2</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 2</ControlPageLabel>
+			</State>
+			<State id="state1_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 3</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 3</ControlPageLabel>
+			</State>
+			<State id="state1_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 4</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 4</ControlPageLabel>
+			</State>
+			<State id="state1_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 5</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 5</ControlPageLabel>
+			</State>
+			<State id="state1_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 6</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 6</ControlPageLabel>
+			</State>
+			<State id="state1_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 7</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 7</ControlPageLabel>
+			</State>
+			<State id="state1_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 8</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 8</ControlPageLabel>
+			</State>
+			<State id="state1_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 9</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 9</ControlPageLabel>
+			</State>
+			<State id="state1_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 10</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 10</ControlPageLabel>
+			</State>
+			<State id="state1_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 11</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 11</ControlPageLabel>
+			</State>
+			<State id="state1_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 12</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 12</ControlPageLabel>
+			</State>
+			<State id="state1_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 13</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 13</ControlPageLabel>
+			</State>
+			<State id="state1_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 14</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 14</ControlPageLabel>
+			</State>
+			<State id="state1_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 15</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 15</ControlPageLabel>
+			</State>
+			<State id="state1_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 16</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 16</ControlPageLabel>
+			</State>
+			<State id="state1_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 17</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 17</ControlPageLabel>
+			</State>
+			<State id="state1_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 18</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 18</ControlPageLabel>
+			</State>
+			<State id="state1_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 19</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 19</ControlPageLabel>
+			</State>
+			<State id="state1_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 1 - LCD 20</TriggerLabel>
+				<ControlPageLabel>Custom State 1 - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state1">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="state2_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 1</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 1</ControlPageLabel>
+			</State>
+			<State id="state2_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 2</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 2</ControlPageLabel>
+			</State>
+			<State id="state2_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 3</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 3</ControlPageLabel>
+			</State>
+			<State id="state2_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 4</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 4</ControlPageLabel>
+			</State>
+			<State id="state2_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 5</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 5</ControlPageLabel>
+			</State>
+			<State id="state2_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 6</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 6</ControlPageLabel>
+			</State>
+			<State id="state2_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 7</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 7</ControlPageLabel>
+			</State>
+			<State id="state2_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 8</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 8</ControlPageLabel>
+			</State>
+			<State id="state2_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 9</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 9</ControlPageLabel>
+			</State>
+			<State id="state2_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 10</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 10</ControlPageLabel>
+			</State>
+			<State id="state2_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 11</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 11</ControlPageLabel>
+			</State>
+			<State id="state2_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 12</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 12</ControlPageLabel>
+			</State>
+			<State id="state2_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 13</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 13</ControlPageLabel>
+			</State>
+			<State id="state2_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 14</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 14</ControlPageLabel>
+			</State>
+			<State id="state2_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 15</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 15</ControlPageLabel>
+			</State>
+			<State id="state2_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 16</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 16</ControlPageLabel>
+			</State>
+			<State id="state2_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 17</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 17</ControlPageLabel>
+			</State>
+			<State id="state2_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 18</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 18</ControlPageLabel>
+			</State>
+			<State id="state2_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 19</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 19</ControlPageLabel>
+			</State>
+			<State id="state2_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 2 - LCD 20</TriggerLabel>
+				<ControlPageLabel>Custom State 2 - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state2">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="state3_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 1</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 1</ControlPageLabel>
+			</State>
+			<State id="state3_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 2</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 2</ControlPageLabel>
+			</State>
+			<State id="state3_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 3</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 3</ControlPageLabel>
+			</State>
+			<State id="state3_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 4</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 4</ControlPageLabel>
+			</State>
+			<State id="state3_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 5</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 5</ControlPageLabel>
+			</State>
+			<State id="state3_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 6</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 6</ControlPageLabel>
+			</State>
+			<State id="state3_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 7</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 7</ControlPageLabel>
+			</State>
+			<State id="state3_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 8</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 8</ControlPageLabel>
+			</State>
+			<State id="state3_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 9</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 9</ControlPageLabel>
+			</State>
+			<State id="state3_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 10</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 10</ControlPageLabel>
+			</State>
+			<State id="state3_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 11</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 11</ControlPageLabel>
+			</State>
+			<State id="state3_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 12</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 12</ControlPageLabel>
+			</State>
+			<State id="state3_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 13</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 13</ControlPageLabel>
+			</State>
+			<State id="state3_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 14</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 14</ControlPageLabel>
+			</State>
+			<State id="state3_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 15</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 15</ControlPageLabel>
+			</State>
+			<State id="state3_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 16</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 16</ControlPageLabel>
+			</State>
+			<State id="state3_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 17</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 17</ControlPageLabel>
+			</State>
+			<State id="state3_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 18</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 18</ControlPageLabel>
+			</State>
+			<State id="state3_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 19</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 19</ControlPageLabel>
+			</State>
+			<State id="state3_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 3 - LCD 20</TriggerLabel>
+				<ControlPageLabel>Custom State 3 - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state3">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="state4_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 1</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 1</ControlPageLabel>
+			</State>
+			<State id="state4_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 2</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 2</ControlPageLabel>
+			</State>
+			<State id="state4_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 3</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 3</ControlPageLabel>
+			</State>
+			<State id="state4_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 4</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 4</ControlPageLabel>
+			</State>
+			<State id="state4_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 5</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 5</ControlPageLabel>
+			</State>
+			<State id="state4_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 6</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 6</ControlPageLabel>
+			</State>
+			<State id="state4_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 7</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 7</ControlPageLabel>
+			</State>
+			<State id="state4_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 8</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 8</ControlPageLabel>
+			</State>
+			<State id="state4_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 9</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 9</ControlPageLabel>
+			</State>
+			<State id="state4_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 10</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 10</ControlPageLabel>
+			</State>
+			<State id="state4_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 11</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 11</ControlPageLabel>
+			</State>
+			<State id="state4_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 12</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 12</ControlPageLabel>
+			</State>
+			<State id="state4_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 13</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 13</ControlPageLabel>
+			</State>
+			<State id="state4_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 14</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 14</ControlPageLabel>
+			</State>
+			<State id="state4_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 15</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 15</ControlPageLabel>
+			</State>
+			<State id="state4_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 16</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 16</ControlPageLabel>
+			</State>
+			<State id="state4_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 17</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 17</ControlPageLabel>
+			</State>
+			<State id="state4_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 18</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 18</ControlPageLabel>
+			</State>
+			<State id="state4_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 19</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 19</ControlPageLabel>
+			</State>
+			<State id="state4_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 4 - LCD 20</TriggerLabel>
+				<ControlPageLabel>Custom State 4 - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state4">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="state5_1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 1</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 1</ControlPageLabel>
+			</State>
+			<State id="state5_2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 2</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 2</ControlPageLabel>
+			</State>
+			<State id="state5_3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 3</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 3</ControlPageLabel>
+			</State>
+			<State id="state5_4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 4</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 4</ControlPageLabel>
+			</State>
+			<State id="state5_5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 5</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 5</ControlPageLabel>
+			</State>
+			<State id="state5_6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 6</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 6</ControlPageLabel>
+			</State>
+			<State id="state5_7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 7</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 7</ControlPageLabel>
+			</State>
+			<State id="state5_8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 8</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 8</ControlPageLabel>
+			</State>
+			<State id="state5_9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 9</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 9</ControlPageLabel>
+			</State>
+			<State id="state5_10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 10</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 10</ControlPageLabel>
+			</State>
+			<State id="state5_11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 11</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 11</ControlPageLabel>
+			</State>
+			<State id="state5_12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 12</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 12</ControlPageLabel>
+			</State>
+			<State id="state5_13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 13</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 13</ControlPageLabel>
+			</State>
+			<State id="state5_14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 14</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 14</ControlPageLabel>
+			</State>
+			<State id="state5_15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 15</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 15</ControlPageLabel>
+			</State>
+			<State id="state5_16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 16</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 16</ControlPageLabel>
+			</State>
+			<State id="state5_17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 17</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 17</ControlPageLabel>
+			</State>
+			<State id="state5_18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 18</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 18</ControlPageLabel>
+			</State>
+			<State id="state5_19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 19</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 19</ControlPageLabel>
+			</State>
+			<State id="state5_20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Custom State 5 - LCD 20</TriggerLabel>
+				<ControlPageLabel>Custom State 5 - LCD 20</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state5">
+				<ValueType>Separator</ValueType>
+			</State>									
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>
+	
+	<Device type="custom" id="epslcdalc">
+		<Name>Alarm Clock LCD</Name>
+		<ConfigUI>
+			<Field id="device" type="menu" >
+				<Label>Device:</Label>
+				<List class="indigo.devices" filter="com.eps.indigoplugin.alarm-clock.epsalarmclock"/>
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<!-- This field is only here for compatibility reasons, probably not needed but being safe -->
+			<Field type="menu" id="digits" defaultValue="4" hidden="true">
+				<Label>State values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+				</List>
+			</Field>
+			
+			<!-- This field is only here for compatibility reasons, probably not needed but being safe -->
+			<Field type="menu" id="decimals" defaultValue="actual" hidden="true" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" >
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+			
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="startTime1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Start time HH:MM - LCD 1</TriggerLabel>
+				<ControlPageLabel>Start time HH:MM - LCD 1</ControlPageLabel>
+			</State>
+			<State id="startTime2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Start time HH:MM - LCD 2</TriggerLabel>
+				<ControlPageLabel>Start time HH:MM - LCD 2</ControlPageLabel>
+			</State>
+			<State id="startTime3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Start time HH:MM - LCD 3</TriggerLabel>
+				<ControlPageLabel>Start time HH:MM - LCD 3</ControlPageLabel>
+			</State>
+			<State id="startTime4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Start time HH:MM - LCD 4</TriggerLabel>
+				<ControlPageLabel>Start time HH:MM - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_startTime">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="endTime1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>End time HH:MM - LCD 1</TriggerLabel>
+				<ControlPageLabel>End time HH:MM - LCD 1</ControlPageLabel>
+			</State>
+			<State id="endTime2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>End time HH:MM - LCD 2</TriggerLabel>
+				<ControlPageLabel>End time HH:MM - LCD 2</ControlPageLabel>
+			</State>
+			<State id="endTime3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>End time HH:MM - LCD 3</TriggerLabel>
+				<ControlPageLabel>End time HH:MM - LCD 3</ControlPageLabel>
+			</State>
+			<State id="endTime4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>End time HH:MM - LCD 4</TriggerLabel>
+				<ControlPageLabel>End time HH:MM - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_endTime">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="timeUntilOn1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until On HH:MM - LCD 1</TriggerLabel>
+				<ControlPageLabel>Time until On HH:MM - LCD 1</ControlPageLabel>
+			</State>
+			<State id="timeUntilOn2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until On HH:MM - LCD 2</TriggerLabel>
+				<ControlPageLabel>Time until On HH:MM - LCD 2</ControlPageLabel>
+			</State>
+			<State id="timeUntilOn3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until On HH:MM - LCD 3</TriggerLabel>
+				<ControlPageLabel>Time until On HH:MM - LCD 3</ControlPageLabel>
+			</State>
+			<State id="timeUntilOn4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until On HH:MM - LCD 4</TriggerLabel>
+				<ControlPageLabel>Time until On HH:MM - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_timeUntilOn">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="timeUntilOff1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until Off HH:MM - LCD 1</TriggerLabel>
+				<ControlPageLabel>Time until Off HH:MM - LCD 1</ControlPageLabel>
+			</State>
+			<State id="timeUntilOff2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until Off HH:MM - LCD 2</TriggerLabel>
+				<ControlPageLabel>Time until Off HH:MM - LCD 2</ControlPageLabel>
+			</State>
+			<State id="timeUntilOff3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until Off HH:MM - LCD 3</TriggerLabel>
+				<ControlPageLabel>Time until Off HH:MM - LCD 3</ControlPageLabel>
+			</State>
+			<State id="timeUntilOff4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Time until Off HH:MM - LCD 4</TriggerLabel>
+				<ControlPageLabel>Time until Off HH:MM - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_timeUntilOff">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="durationMinutes1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Duration minutes - LCD 1</TriggerLabel>
+				<ControlPageLabel>Duration minutes - LCD 1</ControlPageLabel>
+			</State>
+			<State id="durationMinutes2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Duration minutes - LCD 2</TriggerLabel>
+				<ControlPageLabel>Duration minutes - LCD 2</ControlPageLabel>
+			</State>
+			<State id="durationMinutes3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Duration minutes - LCD 3</TriggerLabel>
+				<ControlPageLabel>Duration minutes - LCD 3</ControlPageLabel>
+			</State>
+			<State id="durationMinutes4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Duration minutes - LCD 4</TriggerLabel>
+				<ControlPageLabel>Duration minutes - LCD 4</ControlPageLabel>
+			</State>
+			
+			<State id="sep_durationMinutes">
+				<ValueType>Separator</ValueType>
+			</State>						
+			
+			<State id="sep_state5">
+				<ValueType>Separator</ValueType>
+			</State>									
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>	
+	
+	<Device type="custom" id="epslcddt">
+		<Name>Date and Time LCD</Name>
+		<ConfigUI>
+			<Field id="systemdate" type="checkbox" defaultValue="true">
+				<Label> </Label>
+				<Description>Use system date as source</Description>
+			</Field>
+			
+			<Field id="sep_systemdate" type="separator" visibleBindingId="systemdate" visibleBindingValue="false"/>
+			
+			<Field id="usevariable" type="checkbox" defaultValue="false" visibleBindingId="systemdate" visibleBindingValue="false">
+				<Label> </Label>
+				<Description>Use variable as source</Description>
+			</Field>
+			
+			<Field id="variable" type="menu" visibleBindingId="usevariable" visibleBindingValue="true">
+				<Label>Variable:</Label>
+				<List class="indigo.variables" />
+			</Field>
+			
+			<Field id="device" type="menu" visibleBindingId="usevariable" visibleBindingValue="false">
+				<Label>Device:</Label>
+				<List class="indigo.devices" />
+				<CallbackMethod>onDeviceSelectionChange</CallbackMethod>
+			</Field>
+			
+			<Field type="menu" id="state" defaultValue="4" visibleBindingId="usevariable" visibleBindingValue="false">
+				<Label>String state to convert:</Label>
+				<List class="self" filter="device" method="getStatesForDeviceDateTime" dynamicReload="true"/>
+			</Field>
+			
+			<Field id="valueformat" type="textfield" defaultValue="%Y-%m-%d %H:%M:%S" visibleBindingId="systemdate" visibleBindingValue="false">
+				<Label>Value Python format:</Label>
+			</Field>
+			
+			<Field id="sep_state1" type="separator" />
+			
+			<!-- This field is only here for compatibility reasons, probably not needed but being safe -->
+			<Field type="menu" id="digits" defaultValue="20" hidden="true">
+				<Label>State values digits:</Label>
+				<List>
+					<Option value="1">1</Option>
+					<Option value="2">2</Option>
+					<Option value="3">3</Option>
+					<Option value="4">4</Option>
+					<Option value="20">20</Option>
+				</List>
+			</Field>
+			
+			<!-- This field is only here for compatibility reasons, probably not needed but being safe -->
+			<Field type="menu" id="decimals" defaultValue="actual" hidden="true" >
+				<Label>Decimal treatment:</Label>
+				<List>
+					<Option value="actual">Actual value</Option>
+					<Option value="round">Round to nearest whole</Option>
+					<Option value="single">Round to nearest whole + ".0"</Option>
+					<Option value="one">Round to 10ths</Option>
+					<Option value="two">Round to 100ths</Option>
+					<Option value="three">Round to 1000ths</Option>
+				</List>
+			</Field>
+			
+			<Field id="spaces" type="checkbox" defaultValue="false" hidden="true">
+				<Label> </Label>
+				<Description>Pad numbers with spaces instead of zeros</Description>
+			</Field>
+			
+			<Field id="textspaces" type="checkbox" defaultValue="false" hidden="true">
+				<Label> </Label>
+				<Description>Pad text left instead of right</Description>
+			</Field>
+			
+			<Field id="aboutseconds" type="label" >
+				<Label>Regardless of what time format you use, the plugin will ignore seconds or less on current system time because of the latency of updating control page graphics.  Otherwise you can use ANY Python format up to 20 characters.
+				</Label>
+			</Field>
+			
+			<Field id="dateformat" type="textfield" defaultValue="%m.%d %H:%M">
+				<Label>Python date / time format:</Label>
+			</Field>
+			
+			<Field id="spacer" type="label" visibleBindingId="systemdate" visibleBindingValue="true">
+				<Label>
+
+
+
+
+
+.</Label>
+			</Field>
+			
+			
+		</ConfigUI>
+		
+		<States>
+			<!-- All EPS plugins have this state and use it for the Indigo lists -->
+			<State id="statedisplay">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current device state</TriggerLabel>
+				<ControlPageLabel>Current device state</ControlPageLabel>
+			</State>
+			
+			<State id="sep_state">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="currentDate1">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 1</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 1</ControlPageLabel>
+			</State>
+			<State id="currentDate2">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 2</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 2</ControlPageLabel>
+			</State>
+			<State id="currentDate3">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 3</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 3</ControlPageLabel>
+			</State>
+			<State id="currentDate4">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 4</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 4</ControlPageLabel>
+			</State>
+			<State id="currentDate5">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 5</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 5</ControlPageLabel>
+			</State>
+			<State id="currentDate6">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 6</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 6</ControlPageLabel>
+			</State>
+			<State id="currentDate7">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 7</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 7</ControlPageLabel>
+			</State>
+			<State id="currentDate8">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 8</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 8</ControlPageLabel>
+			</State>
+			<State id="currentDate9">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 9</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 9</ControlPageLabel>
+			</State>
+			<State id="currentDate10">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 10</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 10</ControlPageLabel>
+			</State>
+			<State id="currentDate11">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 11</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 11</ControlPageLabel>
+			</State>
+			<State id="currentDate12">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 12</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 12</ControlPageLabel>
+			</State>
+			<State id="currentDate13">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 13</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 13</ControlPageLabel>
+			</State>
+			<State id="currentDate14">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 14</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 14</ControlPageLabel>
+			</State>
+			<State id="currentDate15">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 15</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 15</ControlPageLabel>
+			</State>
+			<State id="currentDate16">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 16</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 16</ControlPageLabel>
+			</State>
+			<State id="currentDate17">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 17</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 17</ControlPageLabel>
+			</State>
+			<State id="currentDate18">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 18</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 18</ControlPageLabel>
+			</State>
+			<State id="currentDate19">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 19</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 19</ControlPageLabel>
+			</State>
+			<State id="currentDate20">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Current date - LCD 20</TriggerLabel>
+				<ControlPageLabel>Current date - LCD 20</ControlPageLabel>
+			</State>	
+			
+			<State id="sep_currentDate">
+				<ValueType>Separator</ValueType>
+			</State>
+			
+			<State id="storeddate">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last stored date and time</TriggerLabel>
+				<ControlPageLabel>Last stored date and time</ControlPageLabel>
+			</State>
+			
+								
+													
+		</States>
+		<UiDisplayStateId>statedisplay</UiDisplayStateId>
+	</Device>		
+</Devices>

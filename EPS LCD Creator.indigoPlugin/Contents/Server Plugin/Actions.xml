@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Actions>
+	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=196&amp;t=16129</SupportURL>
+	<Action id="update" deviceFilter="self">
+		<Name>Update LCD states</Name>
+		<CallbackMethod>updateDevice</CallbackMethod>
+	</Action>
+</Actions>
