@@ -83,9 +83,5 @@ Using this method is nit-picking performance since polling is almost equally as 
     	<Name>Support Data Dump</Name>
     	<CallbackMethod>supportLog</CallbackMethod>
     </MenuItem>    
-    
-    <MenuItem id="update">
-    	<Name>Check For Plugin Update</Name>
-    	<CallbackMethod>updateCheck</CallbackMethod>
-    </MenuItem>
+
 </MenuItems>

@@ -798,6 +798,8 @@ class Plugin(indigo.PluginBase):
 	################################################################################
 
 	def updateCheck (self, onlyNewer = False, force = True):
+		return
+		
 		try:
 			try:
 				if self.pluginUrl == "": 
